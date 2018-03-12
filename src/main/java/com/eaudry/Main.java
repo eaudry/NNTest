@@ -165,6 +165,6 @@ public class Main {
         log.info("Saved and loaded parameters are equal:      " + model.params().equals(modelRestored.params()));
         log.info("Saved and loaded configurations are equal:  " + model.getLayerWiseConfigurations().equals(modelRestored.getLayerWiseConfigurations()));
 
-        
+
     }
 }
