@@ -21,6 +21,7 @@ import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
 import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +65,8 @@ public class Main {
                 .iterations(1)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 .learningRate(learningRate)
-                .updater(Updater.NESTEROVS)     //To configure: .updater(new Nesterovs(0.9))
+                .updater(new Nesterovs(0.1, 0.9))
+                //.updater(Updater.NESTEROVS) pour setup les valeurs par défaut (0.1 LR et 0.9 MOM)
                 .list()
                 .layer(0, new DenseLayer.Builder().nIn(numInputs).nOut(numHiddenNodes)
                         .weightInit(WeightInit.XAVIER)
@@ -151,8 +153,10 @@ public class Main {
 
 
         //Save the model
-        File locationToSave = new File("MyNetwork.zip");      //Where to save the network. Note: the file is in .zip format - can be opened externally
-        boolean saveUpdater = true;                                             //Updater: i.e., the state for Momentum, RMSProp, Adagrad etc. Save this if you want to train your network more in the future
+        //Where to save the network. Note: the file is in .zip format - can be opened externally
+        File locationToSave = new File("MyNetwork.zip");
+        //Updater: i.e., the state for Momentum, RMSProp, Adagrad etc. Save this if you want to train your network more in the future
+        boolean saveUpdater = true;
         ModelSerializer.writeModel(model, locationToSave, saveUpdater);
 
         log.info("****************Model Save********************");
