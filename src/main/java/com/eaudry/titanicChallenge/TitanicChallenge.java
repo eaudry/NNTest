@@ -51,6 +51,9 @@ public class TitanicChallenge {
         final String filenameTrain  = new ClassPathResource("/titanic_data/train_new.csv").getFile().getPath();
         final String filenameTest  = new ClassPathResource("/titanic_data/test_new.csv").getFile().getPath();
 
+        //final String filenameTrain  = new ClassPathResource("/classification/linear_data_train.csv").getFile().getPath();
+        //final String filenameTest  = new ClassPathResource("/classification/linear_data_eval.csv").getFile().getPath();
+
         //Load the training data:
         RecordReader rrTrainingData = new CSVRecordReader();
 //        rr.initialize(new FileSplit(new File("src/main/resources/classification/linear_data_train.csv")));

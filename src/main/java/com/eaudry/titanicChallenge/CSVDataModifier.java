@@ -31,7 +31,12 @@ public class CSVDataModifier {
             //Transform each data line
             for(int i = 0; i < lineAsList.size(); i++)
             {
-                transformedLineAsList = transformCSVData(lineAsList);
+                try{
+                    transformedLineAsList = transformCSVData(lineAsList);
+                }
+                catch (Exception e){
+                    e.getStackTrace();
+                }
             }
 
             //Transform the list into an array to be accepted as parameter in the writer
@@ -50,7 +55,7 @@ public class CSVDataModifier {
 
 
 
-    private static List<String> transformCSVData(List<String> inputRowAsList) {
+    private static List<String> transformCSVData(List<String> inputRowAsList) throws Exception{
         List<String> outputRowAsList = new ArrayList<String>();
 
         /** COLUMN 1 **/
@@ -90,10 +95,16 @@ public class CSVDataModifier {
         String[] tickedIdSplited = inputRowAsList.get(8).split("\\s+");
         //If ticket doesn't have a prefix
         if (tickedIdSplited.length == 1){
-            //Put 0 in the prefix column
-            outputRowAsList.add("0");
-            //Put ticker number in the next column
-            outputRowAsList.add(tickedIdSplited[0]);
+            if(tickedIdSplited[0].matches("\\d+")) {
+                //Put 0 in the prefix column
+                outputRowAsList.add("0");
+                //Put ticker number in the next column
+                outputRowAsList.add(tickedIdSplited[0]);
+            }
+            else {
+                outputRowAsList.add("0");
+                outputRowAsList.add("0");
+            }
         }
         //If ticket has a prefix
         else {
@@ -135,6 +146,9 @@ public class CSVDataModifier {
         else if (deckId.substring(0, 1).equals("G")){
             outputRowAsList.add("7");
         }
+        else throw new Exception("cabin_Id not recognized : "+deckId);
+
+
 
         /** COLUMN 11 **/
         /** Embarked (port of embarcation): 1 = Cherbourg, 2 = Queenstown, 3 = Southampton **/
@@ -148,6 +162,7 @@ public class CSVDataModifier {
         else if (embarkedPort.equals("S")){
             outputRowAsList.add("3");
         }
+        else outputRowAsList.add("0");
 
         /** Return the new row **/
         return outputRowAsList;
