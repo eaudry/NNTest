@@ -10,6 +10,7 @@ import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
 import org.deeplearning4j.nn.conf.MultiLayerConfiguration;
 import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.Updater;
 import org.deeplearning4j.nn.conf.layers.DenseLayer;
 import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
@@ -40,15 +41,15 @@ public class TitanicChallenge {
 
         int seed = 123;
         double learningRate = 0.01;
-        int batchSize = 50;
-        int nEpochs = 30;
+        int batchSize = 1;
+        int nEpochs = 20;
 
-        int numInputs = 2;
+        int numInputs = 10;
         int numOutputs = 2;
         int numHiddenNodes = 20;
 
-        final String filenameTrain  = new ClassPathResource("/classification/linear_data_train.csv").getFile().getPath();
-        final String filenameTest  = new ClassPathResource("/classification/linear_data_eval.csv").getFile().getPath();
+        final String filenameTrain  = new ClassPathResource("/titanic_data/train_new.csv").getFile().getPath();
+        final String filenameTest  = new ClassPathResource("/titanic_data/test_new.csv").getFile().getPath();
 
         //Load the training data:
         RecordReader rrTrainingData = new CSVRecordReader();
@@ -65,9 +66,9 @@ public class TitanicChallenge {
                 .seed(seed)
                 .iterations(1)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
-                .learningRate(learningRate)
+                //.learningRate(learningRate)
                 .updater(new Nesterovs(0.1, 0.9))
-                //.updater(Updater.NESTEROVS) pour setup les valeurs par défaut (0.1 LR et 0.9 MOM)
+                //.updater(Updater.NESTEROVS) //pour setup les valeurs par défaut (0.1 LR et 0.9 MOM)
                 .list()
                 .layer(0, new DenseLayer.Builder().nIn(numInputs).nOut(numHiddenNodes)
                         .weightInit(WeightInit.XAVIER)
@@ -84,8 +85,9 @@ public class TitanicChallenge {
         model.init();
         model.setListeners(new ScoreIterationListener(10));  //Print score every 10 parameter updates
 
-
+        log.info("Train model....");
         for ( int n = 0; n < nEpochs; n++) {
+            log.info("Epoch: " + n);
             model.fit( trainIter );
         }
 
@@ -115,7 +117,7 @@ public class TitanicChallenge {
         double yMax = 0.8;
 
         //Let's evaluate the predictions at every point in the x/y input space
-        int nPointsPerAxis = 100;
+        int nPointsPerAxis = 50;
         double[][] evalPoints = new double[nPointsPerAxis*nPointsPerAxis][2];
         int count = 0;
         for( int i=0; i<nPointsPerAxis; i++ ){
@@ -136,7 +138,7 @@ public class TitanicChallenge {
         //Get all of the training data in a single array, and plot it:
         rrTrainingData.initialize(new FileSplit(new ClassPathResource("/classification/linear_data_train.csv").getFile()));
         rrTrainingData.reset();
-        int nTrainPoints = 1000;
+        int nTrainPoints = 200;
         trainIter = new RecordReaderDataSetIterator(rrTrainingData,nTrainPoints,0,2);
         DataSet ds = trainIter.next();
         PlotUtil.plotTrainingData(ds.getFeatures(), ds.getLabels(), allXYPoints, predictionsAtXYPoints, nPointsPerAxis);
@@ -144,7 +146,7 @@ public class TitanicChallenge {
         //Get test data, run the test data through the network to generate predictions, and plot those predictions:
         rrTestData.initialize(new FileSplit(new ClassPathResource("/classification/linear_data_eval.csv").getFile()));
         rrTestData.reset();
-        int nTestPoints = 500;
+        int nTestPoints = 50;
         testIter = new RecordReaderDataSetIterator(rrTestData,nTestPoints,0,2);
         ds = testIter.next();
         INDArray testPredicted = model.output(ds.getFeatures());

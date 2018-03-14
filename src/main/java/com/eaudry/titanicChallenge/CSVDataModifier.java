@@ -44,6 +44,7 @@ public class CSVDataModifier {
             //Write the transformed line in the new file
             writer.writeNext(transformedLineAsArray);
         }
+        writer.close();
     }
 
 
@@ -69,7 +70,11 @@ public class CSVDataModifier {
 
         /** COLUMN 4 **/
         /** Age (in years) not always present, fractionnal if less than 1, xx.5 if estimated **/
-        outputRowAsList.add(inputRowAsList.get(5));
+        String age = inputRowAsList.get(5);
+        if (age.equals("")){
+            outputRowAsList.add("-99");
+        }
+        else outputRowAsList.add(age);
 
         /** COLUMN 5 **/
         /** SibSp (# of siblings / spouses aboard the Titanic) **/
@@ -91,11 +96,11 @@ public class CSVDataModifier {
             outputRowAsList.add(tickedIdSplited[0]);
         }
         //If ticket has a prefix
-        else if (tickedIdSplited.length == 2){
-            //Absolute value of the hashcode of the prefix in the column
+        else {
+            //Absolute value of the hashcode of the prefix (or first part of the prefix if multiple spaces) in the column
             outputRowAsList.add(""+Math.abs(tickedIdSplited[0].hashCode()));
-            //Put ticker number in the next column
-            outputRowAsList.add(tickedIdSplited[1]);
+            //Put ticker number (always last part of the split) in the next column
+            outputRowAsList.add(tickedIdSplited[tickedIdSplited.length-1]);
         }
 
 
