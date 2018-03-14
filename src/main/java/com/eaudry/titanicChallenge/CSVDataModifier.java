@@ -19,78 +19,133 @@ public class CSVDataModifier {
         CSVWriter writer = new CSVWriter(new FileWriter("src/main/resources/titanic_data/train_new.csv"));
         String [] nextLine;
 
+        //Skip first line (columns titles)
+        reader.readNext();
+
         //As long as there is a next line in the file
         while ((nextLine = reader.readNext()) != null) {
             //Get that line in a list
             List<String> lineAsList = new ArrayList<String>(Arrays.asList(nextLine));
+            List<String> transformedLineAsList = new ArrayList<String>(Arrays.asList(nextLine));
 
-            //Transform each data cell
+            //Transform each data line
             for(int i = 0; i < lineAsList.size(); i++)
             {
-                String transformedData = transformCSVData(lineAsList.get(i), i);
-                lineAsList.set(i, transformedData);
+                transformedLineAsList = transformCSVData(lineAsList);
             }
 
             //Transform the list into an array to be accepted as parameter in the writer
-            String lineAsArray[] = new String[lineAsList.size()];
-            for(int i = 0; i < lineAsList.size(); i++)
+            String transformedLineAsArray[] = new String[transformedLineAsList.size()];
+            for(int i = 0; i < transformedLineAsList.size(); i++)
             {
-                lineAsArray[i] = lineAsList.get(i);
+                transformedLineAsArray[i] = transformedLineAsList.get(i);
             }
 
             //Write the transformed line in the new file
-            writer.writeNext(lineAsArray);
+            writer.writeNext(transformedLineAsArray);
         }
     }
 
 
 
-    private static String transformCSVData(String inputString, int i) {
-        String outputString;
-        switch (i) {
-            //PassengerId
-            case 0:  outputString = inputString;
-                break;
-            //Survived (0 = No, 1 = Yes)
-            //A voir si il ne faut pas le mettre en position 1 de la liste pour éviter les pb sur le test data après)
-            case 1:  outputString = inputString;
-                break;
-            //Pclass (Ticket class: 1 = 1st, 2 = 2nd, 3 = 3rd)
-            case 2:  outputString = inputString;
-                break;
-            //Name
-            case 3:  outputString = inputString;
-                break;
-            //Sex (male, female)
-            case 4:  outputString = inputString;
-                break;
-            //Age (age in years) not always present
-            //fractionnal if less than 1, xx.5 if estimated
-            case 5:  outputString = inputString;
-                break;
-            //SibSp (# of siblings / spouses aboard the Titanic)
-            case 6:  outputString = inputString;
-                break;
-            //Parch (# of parents / children aboard the Titanic)
-            case 7:  outputString = inputString;
-                break;
-            //Ticket (number or complex string, do research on that)
-            case 8:  outputString = inputString;
-                break;
-            //Fare (ticket price)
-            case 9: outputString = inputString;
-                break;
-            //Cabin (cabin number)
-            case 10: outputString = inputString;
-                break;
-            //Embarked (port of embarcation)
-            //C = Cherbourg, Q = Queenstown, S = Southampton
-            case 11: outputString = inputString;
-                break;
-            default: outputString = inputString;
-                break;
+
+    private static List<String> transformCSVData(List<String> inputRowAsList) {
+        List<String> outputRowAsList = new ArrayList<String>();
+
+        /** COLUMN 1 **/
+        /** Add survived or not as new first column **/
+        outputRowAsList.add(inputRowAsList.get(1));
+
+        /** COLUMN 2 **/
+        /** Passenger class: 1 = 1st, 2 = 2nd, 3 = 3rd **/
+        outputRowAsList.add(inputRowAsList.get(2));
+
+        /** COLUMN 3 **/
+        /** Sex: male, female **/
+        if (inputRowAsList.get(4).equals("female")){
+            outputRowAsList.add("1");
         }
-        return outputString;
+        else outputRowAsList.add("2");
+
+        /** COLUMN 4 **/
+        /** Age (in years) not always present, fractionnal if less than 1, xx.5 if estimated **/
+        outputRowAsList.add(inputRowAsList.get(5));
+
+        /** COLUMN 5 **/
+        /** SibSp (# of siblings / spouses aboard the Titanic) **/
+        outputRowAsList.add(inputRowAsList.get(6));
+
+        /** COLUMN 6 **/
+        /** Parch (# of parents / children aboard the Titanic) **/
+        outputRowAsList.add(inputRowAsList.get(7));
+
+        /** COLUMN 7 and 8**/
+        /** Ticket id: optional prefix + number, split and output as 2 columns **/
+        //Split by space
+        String[] tickedIdSplited = inputRowAsList.get(8).split("\\s+");
+        //If ticket doesn't have a prefix
+        if (tickedIdSplited.length == 1){
+            //Put 0 in the prefix column
+            outputRowAsList.add("0");
+            //Put ticker number in the next column
+            outputRowAsList.add(tickedIdSplited[0]);
+        }
+        //If ticket has a prefix
+        else if (tickedIdSplited.length == 2){
+            //Absolute value of the hashcode of the prefix in the column
+            outputRowAsList.add(""+Math.abs(tickedIdSplited[0].hashCode()));
+            //Put ticker number in the next column
+            outputRowAsList.add(tickedIdSplited[1]);
+        }
+
+
+        /** COLUMN 9 **/
+        /** Fare (ticket price) **/
+        outputRowAsList.add(inputRowAsList.get(9));
+
+        /** COLUMN 10 **/
+        /** Cabin (cabin id): save first letter (= deck) higher deck higher chance of survival, 8 if the info is missing **/
+        String deckId = inputRowAsList.get(10);
+        if (deckId.equals("")){
+            outputRowAsList.add("8");
+        }
+        else if (deckId.substring(0, 1).equals("A")){
+            outputRowAsList.add("1");
+        }
+        else if (deckId.substring(0, 1).equals("B")){
+            outputRowAsList.add("2");
+        }
+        else if (deckId.substring(0, 1).equals("C")){
+            outputRowAsList.add("3");
+        }
+        else if (deckId.substring(0, 1).equals("D")){
+            outputRowAsList.add("4");
+        }
+        else if (deckId.substring(0, 1).equals("E")){
+            outputRowAsList.add("5");
+        }
+        else if (deckId.substring(0, 1).equals("F")){
+            outputRowAsList.add("6");
+        }
+        else if (deckId.substring(0, 1).equals("G")){
+            outputRowAsList.add("7");
+        }
+
+        /** COLUMN 11 **/
+        /** Embarked (port of embarcation): 1 = Cherbourg, 2 = Queenstown, 3 = Southampton **/
+        String embarkedPort = inputRowAsList.get(11);
+        if (embarkedPort.equals("C")){
+            outputRowAsList.add("1");
+        }
+        else if (embarkedPort.equals("Q")){
+            outputRowAsList.add("2");
+        }
+        else if (embarkedPort.equals("S")){
+            outputRowAsList.add("3");
+        }
+
+        /** Return the new row **/
+        return outputRowAsList;
     }
 
 }
