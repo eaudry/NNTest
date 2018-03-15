@@ -1,58 +1,182 @@
 package com.eaudry.titanicChallenge;
 
+import com.eaudry.Main;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVWriter;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Logger;
 
 /**
  * Created by eaudr on 13/03/2018.
  */
 public class CSVDataModifier {
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(CSVDataModifier.class);
+    private static int inputDataValidated = 0;
+    private static int outputDataValidated = 0;
 
     public static void main(String[] args)throws IOException{
 
+        //Setup file reader and file writer
         CSVReader reader = new CSVReader(new FileReader("src/main/resources/titanic_data/train_raw.csv"));
         CSVWriter writer = new CSVWriter(new FileWriter("src/main/resources/titanic_data/train_new.csv"));
         String [] nextLine;
+        int rowNumber =0;
 
         //Skip first line (columns titles)
         reader.readNext();
 
-        //As long as there is a next line in the file
+        //As long as there is a next row in the file
         while ((nextLine = reader.readNext()) != null) {
+            rowNumber++;
             //Get that line in a list
-            List<String> lineAsList = new ArrayList<String>(Arrays.asList(nextLine));
-            List<String> transformedLineAsList = new ArrayList<String>(Arrays.asList(nextLine));
+            List<String> rowAsList = new ArrayList<String>(Arrays.asList(nextLine));
+            List<String> transformedRowAsList;
 
-            //Transform each data line
-            for(int i = 0; i < lineAsList.size(); i++)
-            {
-                try{
-                    transformedLineAsList = transformCSVData(lineAsList);
-                }
-                catch (Exception e){
-                    e.getStackTrace();
+            try{
+                //Check the format of each cell of the input
+                boolean inputDataIsCorrect  = checkInputDataIsCorrect(rowAsList, rowNumber);
+                if (inputDataIsCorrect){
+                    transformedRowAsList = transformCSVData(rowAsList);
+                    //Check the format of each cell transformed cell
+                    boolean outPutDataIsCorrect = checkOutputDataIsCorrect(transformedRowAsList, rowNumber);
+                    //If everything is right add it to the train data set
+                    if (outPutDataIsCorrect){
+                            addDataToTrainingFile(transformedRowAsList, writer);
+                    }
                 }
             }
-
-            //Transform the list into an array to be accepted as parameter in the writer
-            String transformedLineAsArray[] = new String[transformedLineAsList.size()];
-            for(int i = 0; i < transformedLineAsList.size(); i++)
-            {
-                transformedLineAsArray[i] = transformedLineAsList.get(i);
+            catch (Exception e){
+                e.getStackTrace();
             }
-
-            //Write the transformed line in the new file
-            writer.writeNext(transformedLineAsArray);
-        }
+        }// end of file reader
+        log.info("Correct input data : " + inputDataValidated+"/"+rowNumber);
+        log.info("Correct input data : " + outputDataValidated+"/"+inputDataValidated);
         writer.close();
+    }// end of main
+
+    private static boolean checkInputDataIsCorrect(List<String> rowAsList, int rowNumber){
+        boolean inputDataIsCorrect = true;
+        //Check if total variable count is correct
+        if (rowAsList.size() != 12){
+            inputDataIsCorrect = false;
+            log.info("Line " + rowNumber + " : input data rejected, variable count != 12 : " + rowAsList.size());
+        }
+
+        //If it is correct you are sure can get() the 12 variables and check them
+        else{
+            String passengerId = rowAsList.get(0);
+            String survived = rowAsList.get(1);
+            String passengerClass = rowAsList.get(2);
+            String name = rowAsList.get(3);
+            String sex = rowAsList.get(4);
+            String age = rowAsList.get(5);
+            String sibSp = rowAsList.get(6);
+            String parch = rowAsList.get(7);
+            String ticketId = rowAsList.get(8);
+            String fare = rowAsList.get(9);
+            String cabin = rowAsList.get(10);
+            String embarkedPort = rowAsList.get(11);
+
+            //Check if "passengerId" variable matches an int
+            if (!passengerId.matches("\\d+")){
+                inputDataIsCorrect = false;
+                log.info("Line " + rowNumber + " : input data rejected, passengerId is not an int : " + passengerId);
+            }
+            //Check if "survived" variable is 0 or 1
+            else if (!survived.matches("[01]")){
+                inputDataIsCorrect = false;
+                log.info("Line " + rowNumber + " : input data rejected, survived is not 0 or 1 : " + survived);
+            }
+            //Check if "passenger class" variable is 1,2 or 3
+            else if (!passengerClass.matches("[123]")){
+                inputDataIsCorrect = false;
+                log.info("Line " + rowNumber + " : input data rejected, passenger class is not 1,2 or 3 : " + passengerClass);
+            }
+            //Check if "name" variable is present
+            else if (name.equals("")){
+                inputDataIsCorrect = false;
+                log.info("Line " + rowNumber + " : input data rejected, passenger name missing : " + name);
+            }
+            //Check if "sex" variable is male or female
+            else if (!sex.equals("male") && !sex.equals("female")){
+                inputDataIsCorrect = false;
+                log.info("Line " + rowNumber + " : input data rejected, sex variable not recognized : " + sex);
+            }
+            //Check if "age" variable is either a positive number (xx.xx) or missing (data unknown)
+            else if (!age.matches("([0-9]+)*\\.*[0-9]+") && !age.equals("")){
+                inputDataIsCorrect = false;
+                log.info("Line " + rowNumber + " : input data rejected, age variable not recognized : " + age);
+            }
+            //Check if "sibSp" variable is positive integer
+            else if (!sibSp.matches("[0-9]+")){
+                inputDataIsCorrect = false;
+                log.info("Line " + rowNumber + " : input data rejected, sibSp is not a positive integer : " + sibSp);
+            }
+            //Check if "parch" variable is positive integer
+            else if (!parch.matches("[0-9]+")){
+                inputDataIsCorrect = false;
+                log.info("Line " + rowNumber + " : input data rejected, parch is not a positive integer : " + parch);
+            }
+            //Check if "ticketId" variable is an optional prefix followed by a optional space and a number
+            else if (!ticketId.matches(".*\\s*[0-9]+")){
+                inputDataIsCorrect = false;
+                log.info("Line " + rowNumber + " : input data rejected, tickedId not recognized : " + ticketId);
+            }
+            //Check if "fare" variable is either a positive number (xx.xx) or missing (data unknown)
+            else if (!fare.matches("([0-9]+)*\\.*[0-9]+") && !fare.equals("")){
+                inputDataIsCorrect = false;
+                log.info("Line " + rowNumber + " : input data rejected, fare variable not recognized : " + fare);
+            }
+            //Check if "cabin" variable either starts with a letter or is missing (data unknown)
+            else if (!cabin.matches("[A-Z].*") && !cabin.equals("")){
+                inputDataIsCorrect = false;
+                log.info("Line " + rowNumber + " : input data rejected, cabin does not start with a letter : " + cabin);
+            }
+            //Check if "embarkedPort" is C,S or Q
+            else if (!embarkedPort.matches("[CSQ]") ){
+                inputDataIsCorrect = false;
+                log.info("Line " + rowNumber + " : input data rejected, embarked port not recognized : " + embarkedPort);
+            }
+        }
+        if (inputDataIsCorrect) {inputDataValidated++;}
+        return inputDataIsCorrect;
     }
 
 
+
+    private static boolean checkOutputDataIsCorrect(List<String> transformedRowAsList, int rowNumber){
+        boolean outputDataIsCorrect = true;
+
+
+        return outputDataIsCorrect;
+    }
+
+
+
+    private static void addDataToTrainingFile(List<String> transformedRowAsList, CSVWriter writer){
+        //Transform the list into an array to be accepted as parameter in the writer
+        String transformedLineAsArray[] = new String[transformedRowAsList.size()];
+        for(int i = 0; i < transformedRowAsList.size(); i++)
+        {
+            transformedLineAsArray[i] = transformedRowAsList.get(i);
+        }
+
+        //Write the transformed data line in the training data file
+        writer.writeNext(transformedLineAsArray);
+
+        //Flush the writer
+        try{
+            writer.flush();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 
     private static List<String> transformCSVData(List<String> inputRowAsList) throws Exception{
@@ -95,16 +219,10 @@ public class CSVDataModifier {
         String[] tickedIdSplited = inputRowAsList.get(8).split("\\s+");
         //If ticket doesn't have a prefix
         if (tickedIdSplited.length == 1){
-            if(tickedIdSplited[0].matches("\\d+")) {
-                //Put 0 in the prefix column
-                outputRowAsList.add("0");
-                //Put ticker number in the next column
-                outputRowAsList.add(tickedIdSplited[0]);
-            }
-            else {
-                outputRowAsList.add("0");
-                outputRowAsList.add("0");
-            }
+            //Put 0 in the prefix column
+            outputRowAsList.add("0");
+            //Put ticker number in the next column
+            outputRowAsList.add(tickedIdSplited[0]);
         }
         //If ticket has a prefix
         else {
