@@ -26,6 +26,7 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -63,6 +64,9 @@ public class TitanicChallenge {
 //        rr.initialize(new FileSplit(new File("src/main/resources/classification/linear_data_train.csv")));
         rrTrainingData.initialize(new FileSplit(new File(filenameTrain)));
         DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrainingData,batchSize,0,2);
+
+        //NormalizerMinMaxScaler preProcessor = new NormalizerMinMaxScaler();
+        //preProcessor.fit(trainIter);
 
         //Load the test/evaluation data:
         RecordReader rrTestData = new CSVRecordReader();

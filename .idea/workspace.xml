@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="7e568bb6-3bda-4915-ade9-ad1de46a85fd" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/eaudry/titanicChallenge/CSVDataModifier.java" afterPath="$PROJECT_DIR$/src/main/java/com/eaudry/titanicChallenge/CSVDataModifier.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/eaudry/titanicChallenge/TitanicChallenge.java" afterPath="$PROJECT_DIR$/src/main/java/com/eaudry/titanicChallenge/TitanicChallenge.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/resources/titanic_data/test_new.csv" afterPath="$PROJECT_DIR$/src/main/resources/titanic_data/test_new.csv" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/resources/titanic_data/train_new.csv" afterPath="$PROJECT_DIR$/src/main/resources/titanic_data/train_new.csv" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -23,8 +19,8 @@
       <file leaf-file-name="TitanicChallenge.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/eaudry/titanicChallenge/TitanicChallenge.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="566">
-              <caret line="112" column="36" lean-forward="false" selection-start-line="112" selection-start-column="36" selection-end-line="112" selection-end-column="36" />
+            <state relative-caret-position="188">
+              <caret line="68" column="10" lean-forward="false" selection-start-line="68" selection-start-column="10" selection-end-line="68" selection-end-column="10" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -605,7 +601,6 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="-9" y="-9" width="1938" height="1048" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
@@ -1056,8 +1051,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/eaudry/titanicChallenge/TitanicChallenge.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="566">
-          <caret line="112" column="36" lean-forward="false" selection-start-line="112" selection-start-column="36" selection-end-line="112" selection-end-column="36" />
+        <state relative-caret-position="188">
+          <caret line="68" column="10" lean-forward="false" selection-start-line="68" selection-start-column="10" selection-end-line="68" selection-end-column="10" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
