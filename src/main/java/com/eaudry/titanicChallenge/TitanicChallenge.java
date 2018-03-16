@@ -5,6 +5,7 @@ import com.eaudry.PlotUtil;
 import org.datavec.api.records.reader.RecordReader;
 import org.datavec.api.records.reader.impl.csv.CSVRecordReader;
 import org.datavec.api.split.FileSplit;
+import org.deeplearning4j.api.storage.StatsStorage;
 import org.deeplearning4j.datasets.datavec.RecordReaderDataSetIterator;
 import org.deeplearning4j.eval.Evaluation;
 import org.deeplearning4j.nn.api.OptimizationAlgorithm;
@@ -16,7 +17,10 @@ import org.deeplearning4j.nn.conf.layers.OutputLayer;
 import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
 import org.deeplearning4j.nn.weights.WeightInit;
 import org.deeplearning4j.optimize.listeners.ScoreIterationListener;
+import org.deeplearning4j.ui.api.UIServer;
 import org.deeplearning4j.ui.standalone.ClassPathResource;
+import org.deeplearning4j.ui.stats.StatsListener;
+import org.deeplearning4j.ui.storage.InMemoryStatsStorage;
 import org.deeplearning4j.util.ModelSerializer;
 import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
@@ -42,14 +46,14 @@ public class TitanicChallenge {
         int seed = 123;
         double learningRate = 0.01;
         int batchSize = 1;
-        int nEpochs = 20;
+        int nEpochs = 5;
 
-        int numInputs = 10;
+        int numInputs = 8;
         int numOutputs = 2;
-        int numHiddenNodes = 20;
+        int numHiddenNodes = 6;
 
-        final String filenameTrain  = new ClassPathResource("/titanic_data/train_new.csv").getFile().getPath();
-        final String filenameTest  = new ClassPathResource("/titanic_data/test_new.csv").getFile().getPath();
+        final String filenameTrain  = new ClassPathResource("/titanic_data/train_new_2.csv").getFile().getPath();
+        final String filenameTest  = new ClassPathResource("/titanic_data/test_new_2.csv").getFile().getPath();
 
         //final String filenameTrain  = new ClassPathResource("/classification/linear_data_train.csv").getFile().getPath();
         //final String filenameTest  = new ClassPathResource("/classification/linear_data_eval.csv").getFile().getPath();
@@ -88,15 +92,34 @@ public class TitanicChallenge {
         model.init();
         model.setListeners(new ScoreIterationListener(10));  //Print score every 10 parameter updates
 
+        /** To visualize network training: http://localhost:9000/train **/
+        /** To use port xxxx, pass the following to the JVM on launch: -Dorg.deeplearning4j.ui.port=xxxx**/
+        //Initialize the user interface backend
+        UIServer uiServer = UIServer.getInstance();
+
+        //Configure where the network information (gradients, score vs. time etc) is to be stored. Here: store in memory.
+        StatsStorage statsStorage = new InMemoryStatsStorage();         //Alternative: new FileStatsStorage(File), for saving and loading later
+
+        //Attach the StatsStorage instance to the UI: this allows the contents of the StatsStorage to be visualized
+        uiServer.attach(statsStorage);
+
+        //Then add the StatsListener to collect this information from the network, as it trains
+        model.setListeners(new StatsListener(statsStorage));
+        /** **/
+
+
         log.info("Train model....");
         for ( int n = 0; n < nEpochs; n++) {
             log.info("Epoch: " + n);
             model.fit( trainIter );
         }
 
+        int k = 0;
         log.info("Evaluate model....");
         Evaluation eval = new Evaluation(numOutputs);
         while(testIter.hasNext()){
+            k++;
+            log.info("evaluating row : "+k);
             DataSet t = testIter.next();
             INDArray features = t.getFeatureMatrix();
             INDArray lables = t.getLabels();

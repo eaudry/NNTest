@@ -61,7 +61,7 @@ public class CSVDataModifier {
 
     private static boolean checkInputDataIsCorrect(List<String> rowAsList, int rowNumber){
         boolean inputDataIsCorrect = true;
-        //Check if total variable count is correct
+        //Check if total input variable count is correct
         if (rowAsList.size() != 12){
             inputDataIsCorrect = false;
             log.info("Line " + rowNumber + " : input data rejected, variable count != 12 : " + rowAsList.size());
@@ -151,8 +151,27 @@ public class CSVDataModifier {
 
     private static boolean checkOutputDataIsCorrect(List<String> transformedRowAsList, int rowNumber){
         boolean outputDataIsCorrect = true;
+        //Check if total output variable count is correct
+        if (transformedRowAsList.size() != 11){
+            outputDataIsCorrect = false;
+            log.info("Line " + rowNumber + " : output data rejected, variable count != 11 : " + transformedRowAsList.size());
+        }
+        //If it is correct you are sure can get() the 12 variables and check them
+        else {
+            String survived = transformedRowAsList.get(0);
+            String passengerClass = transformedRowAsList.get(1);
+            String sex = transformedRowAsList.get(2);
+            String age = transformedRowAsList.get(3);
+            String sibSp = transformedRowAsList.get(4);
+            String parch = transformedRowAsList.get(5);
+            String ticketIdprefix = transformedRowAsList.get(6);
+            String ticketId = transformedRowAsList.get(7);
+            String fare = transformedRowAsList.get(8);
+            String cabin = transformedRowAsList.get(9);
+            String embarkedPort = transformedRowAsList.get(10);
 
-
+        }
+        if (outputDataIsCorrect) {outputDataValidated++;}
         return outputDataIsCorrect;
     }
 
