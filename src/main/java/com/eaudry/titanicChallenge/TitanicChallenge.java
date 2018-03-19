@@ -47,14 +47,14 @@ public class TitanicChallenge {
         int seed = 123;
         double learningRate = 0.01;
         int batchSize = 1;
-        int nEpochs = 5;
+        int nEpochs = 10;
 
-        int numInputs = 8;
+        int numInputs = 6;
         int numOutputs = 2;
         int numHiddenNodes = 6;
 
-        final String filenameTrain  = new ClassPathResource("/titanic_data/train_new_2.csv").getFile().getPath();
-        final String filenameTest  = new ClassPathResource("/titanic_data/test_new_2.csv").getFile().getPath();
+        final String filenameTrain  = new ClassPathResource("/titanic_data/train_new_3.csv").getFile().getPath();
+        final String filenameTest  = new ClassPathResource("/titanic_data/test_new_3.csv").getFile().getPath();
 
         //final String filenameTrain  = new ClassPathResource("/classification/linear_data_train.csv").getFile().getPath();
         //final String filenameTest  = new ClassPathResource("/classification/linear_data_eval.csv").getFile().getPath();
@@ -87,7 +87,7 @@ public class TitanicChallenge {
                         .build())
                 .layer(1, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
                         .weightInit(WeightInit.XAVIER)
-                        .activation(Activation.SOFTMAX).weightInit(WeightInit.XAVIER)
+                        .activation(Activation.SIGMOID).weightInit(WeightInit.XAVIER)
                         .nIn(numHiddenNodes).nOut(numOutputs).build())
                 .pretrain(false).backprop(true).build();
 
@@ -142,13 +142,13 @@ public class TitanicChallenge {
 
         //Plot the data:
         double xMin = 0;
-        double xMax = 1.0;
+        double xMax = 1.0;g
         double yMin = -0.2;
         double yMax = 0.8;
 
         //Let's evaluate the predictions at every point in the x/y input space
         int nPointsPerAxis = 50;
-        double[][] evalPoints = new double[nPointsPerAxis*nPointsPerAxis][2];
+        double[][] evalPoints = new double[nPointsPerAxis*nPointsPerAxis][numInputs];
         int count = 0;
         for( int i=0; i<nPointsPerAxis; i++ ){
             for( int j=0; j<nPointsPerAxis; j++ ){
@@ -166,7 +166,7 @@ public class TitanicChallenge {
         INDArray predictionsAtXYPoints = model.output(allXYPoints);
 
         //Get all of the training data in a single array, and plot it:
-        rrTrainingData.initialize(new FileSplit(new ClassPathResource("/classification/linear_data_train.csv").getFile()));
+        rrTrainingData.initialize(new FileSplit(new ClassPathResource("/titanic_data/train_new_3.csv").getFile()));
         rrTrainingData.reset();
         int nTrainPoints = 200;
         trainIter = new RecordReaderDataSetIterator(rrTrainingData,nTrainPoints,0,2);
@@ -174,7 +174,7 @@ public class TitanicChallenge {
         PlotUtil.plotTrainingData(ds.getFeatures(), ds.getLabels(), allXYPoints, predictionsAtXYPoints, nPointsPerAxis);
 
         //Get test data, run the test data through the network to generate predictions, and plot those predictions:
-        rrTestData.initialize(new FileSplit(new ClassPathResource("/classification/linear_data_eval.csv").getFile()));
+        rrTestData.initialize(new FileSplit(new ClassPathResource("/titanic_data/test_new_3.csv").getFile()));
         rrTestData.reset();
         int nTestPoints = 50;
         testIter = new RecordReaderDataSetIterator(rrTestData,nTestPoints,0,2);
