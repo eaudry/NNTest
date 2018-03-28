@@ -26,7 +26,9 @@ import org.nd4j.linalg.activations.Activation;
 import org.nd4j.linalg.api.ndarray.INDArray;
 import org.nd4j.linalg.dataset.DataSet;
 import org.nd4j.linalg.dataset.api.iterator.DataSetIterator;
+import org.nd4j.linalg.dataset.api.preprocessor.DataNormalization;
 import org.nd4j.linalg.dataset.api.preprocessor.NormalizerMinMaxScaler;
+import org.nd4j.linalg.dataset.api.preprocessor.NormalizerStandardize;
 import org.nd4j.linalg.factory.Nd4j;
 import org.nd4j.linalg.learning.config.Nesterovs;
 import org.nd4j.linalg.lossfunctions.LossFunctions;
@@ -47,38 +49,45 @@ public class TitanicChallenge {
         int seed = 123;
         double learningRate = 0.01;
         int batchSize = 1;
-        int nEpochs = 10;
+        int nEpochs = 3;
 
-        int numInputs = 6;
+        int numInputs = 8;
         int numOutputs = 2;
         int numHiddenNodes = 6;
 
-        final String filenameTrain  = new ClassPathResource("/titanic_data/train_new_3.csv").getFile().getPath();
-        final String filenameTest  = new ClassPathResource("/titanic_data/test_new_3.csv").getFile().getPath();
+        final String filenameTrain  = new ClassPathResource("/titanic_data/train_new_2.csv").getFile().getPath();
+        final String filenameTest  = new ClassPathResource("/titanic_data/test_new_2.csv").getFile().getPath();
 
         //final String filenameTrain  = new ClassPathResource("/classification/linear_data_train.csv").getFile().getPath();
         //final String filenameTest  = new ClassPathResource("/classification/linear_data_eval.csv").getFile().getPath();
 
-        //Load the training data:
+        /**Load the training data:**/
         RecordReader rrTrainingData = new CSVRecordReader();
 //        rr.initialize(new FileSplit(new File("src/main/resources/classification/linear_data_train.csv")));
         rrTrainingData.initialize(new FileSplit(new File(filenameTrain)));
         DataSetIterator trainIter = new RecordReaderDataSetIterator(rrTrainingData,batchSize,0,2);
 
-        //NormalizerMinMaxScaler preProcessor = new NormalizerMinMaxScaler();
-        //preProcessor.fit(trainIter);
+        /**Normalize the training data (and test data further)**/
+        DataNormalization normalizer = new NormalizerStandardize();
+        //Collect training data statistics
+        normalizer.fit(trainIter);
+        trainIter.reset();
 
-        //Load the test/evaluation data:
+        //Use previously collected statistics to normalize on-the-fly. Each DataSet returned by 'trainData' iterator will be normalized
+        trainIter.setPreProcessor(normalizer);
+
+        /**Load the test/evaluation data:**/
         RecordReader rrTestData = new CSVRecordReader();
         rrTestData.initialize(new FileSplit(new File(filenameTest)));
         DataSetIterator testIter = new RecordReaderDataSetIterator(rrTestData,batchSize,0,2);
+        testIter.setPreProcessor(normalizer);   //Note that we are using the exact same normalization process as the training data
 
         MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
                 .seed(seed)
                 .iterations(1)
                 .optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
                 //.learningRate(learningRate)
-                .updater(new Nesterovs(0.1, 0.9))
+                .updater(new Nesterovs(0.05, 0.9))
                 //.updater(Updater.NESTEROVS) //pour setup les valeurs par défaut (0.1 LR et 0.9 MOM)
                 .list()
                 .layer(0, new DenseLayer.Builder().nIn(numInputs).nOut(numHiddenNodes)
@@ -130,7 +139,6 @@ public class TitanicChallenge {
             INDArray predicted = model.output(features,false);
 
             eval.eval(lables, predicted);
-
         }
 
         //Print the evaluation statistics
@@ -142,7 +150,7 @@ public class TitanicChallenge {
 
         //Plot the data:
         double xMin = 0;
-        double xMax = 1.0;g
+        double xMax = 1.0;
         double yMin = -0.2;
         double yMax = 0.8;
 
@@ -166,7 +174,7 @@ public class TitanicChallenge {
         INDArray predictionsAtXYPoints = model.output(allXYPoints);
 
         //Get all of the training data in a single array, and plot it:
-        rrTrainingData.initialize(new FileSplit(new ClassPathResource("/titanic_data/train_new_3.csv").getFile()));
+        rrTrainingData.initialize(new FileSplit(new ClassPathResource("/titanic_data/train_new_2.csv").getFile()));
         rrTrainingData.reset();
         int nTrainPoints = 200;
         trainIter = new RecordReaderDataSetIterator(rrTrainingData,nTrainPoints,0,2);
@@ -174,7 +182,7 @@ public class TitanicChallenge {
         PlotUtil.plotTrainingData(ds.getFeatures(), ds.getLabels(), allXYPoints, predictionsAtXYPoints, nPointsPerAxis);
 
         //Get test data, run the test data through the network to generate predictions, and plot those predictions:
-        rrTestData.initialize(new FileSplit(new ClassPathResource("/titanic_data/test_new_3.csv").getFile()));
+        rrTestData.initialize(new FileSplit(new ClassPathResource("/titanic_data/test_new_2.csv").getFile()));
         rrTestData.reset();
         int nTestPoints = 50;
         testIter = new RecordReaderDataSetIterator(rrTestData,nTestPoints,0,2);
